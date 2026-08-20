@@ -20,7 +20,7 @@ Diseñado y construido por **8 Digital**.
 | `GET` | `/api/productos` | Retorna el inventario completo de la pastelería agrupado por categorías (tortas, queques, tartas, personales). |
 
 ## ⚙️ Despliegue Local
-Para ejecutar este microservicio en un entorno local:
+Para ejecutar este microservicio en un entorno local: 
 1. Asegurarse de tener el JDK 21 instalado y el servicio de MySQL (XAMPP) activo.
 2. Crear la base de datos relacional en MySQL con el nombre: `pasteleria_my_dreams`.
 3. Verificar la configuración de conexión en el archivo `src/main/resources/application.properties`.
