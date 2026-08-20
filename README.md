@@ -26,4 +26,4 @@ Para ejecutar este microservicio en un entorno local:
 4. Ejecutar la clase principal `CatalogoServiceApplication.java`.
 5. El servidor se inicializará por defecto en el puerto `8080`.
 
-> **Nota de Seguridad:** Para facilitar las pruebas de integración iniciales con el frontend en React, las rutas están temporalmente expuestas (`permitAll`). En fases posteriores, se implementará la validación estricta del token JWT contra el IDaaS.
+> **Nota de Seguridad:** El microservicio implementa validación de tokens JWT mediante Spring Security OAuth2 Resource Server. Las rutas protegidas requieren un token válido emitido por Google (IDaaS) en el encabezado `Authorization: Bearer <token>`.
