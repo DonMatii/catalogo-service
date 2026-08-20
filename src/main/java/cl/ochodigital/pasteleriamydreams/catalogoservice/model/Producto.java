@@ -1,24 +1,31 @@
 package cl.ochodigital.pasteleriamydreams.catalogoservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "productos")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Producto {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nombre;
 
-    private String img;
-
-    @JsonProperty("desc") // la variable exactamente como está en el front
+    @Column(name = "descripcion", length = 500)
+    @JsonProperty("desc")
     private String descripcion;
 
-    private String categoria; // Para clasificar si es torta, queque, tarta o personal
+    @Column(name = "imagen_url")
+    @JsonProperty("img")
+    private String imagen;
 
+    @Column(nullable = false)
+    private String categoria;
+
+    private Integer precio;
 }
