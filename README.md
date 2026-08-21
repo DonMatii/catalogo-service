@@ -26,4 +26,4 @@ Para ejecutar este microservicio conectado a la infraestructura cloud:
 3. Abrir el proyecto en IntelliJ IDEA, actualizar las dependencias de Maven y ejecutar la clase principal `CatalogoServiceApplication.java`.
 4. El servidor se inicializará por defecto en el puerto `8080`.
 
-> **Nota de Seguridad:** El microservicio implementa validación de tokens JWT mediante Spring Security OAuth2 Resource Server. Las rutas protegidas (como administración) requieren un token válido emitido por Google (IDaaS) en el encabezado `Authorization: Bearer <token>`, mientras que el catálogo de productos es de acceso público (`permitAll`).
+> **Nota de Seguridad:** El microservicio implementa un filtro de seguridad personalizado (`JwtUniversalAuthFilter`) que valida tokens JWT de forma unificada. Todas las rutas de gestión y el consumo del catálogo de productos (`/api/productos`) requieren obligatoriamente que el usuario haya iniciado sesión (mediante Google OAuth2 o credenciales de Administrador), enviando el token en el encabezado `Authorization: Bearer <token>`.
