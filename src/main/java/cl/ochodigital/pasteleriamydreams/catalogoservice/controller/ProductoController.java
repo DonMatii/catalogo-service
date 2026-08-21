@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "http://localhost:5173") // Cortafuegos para evitar errores CORS con el frontend
+@CrossOrigin(origins = "*") // Permitimos el tráfico libre desde el API Gateway y localhost
 public class ProductoController {
 
     private final ProductoService productoService;

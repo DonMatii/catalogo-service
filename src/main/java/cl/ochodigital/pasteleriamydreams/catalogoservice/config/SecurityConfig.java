@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,13 +32,12 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new AdminBypassFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtUniversalAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
+                        // ¡LA CLAVE DE TODO! Permitir las peticiones de sondeo OPTIONS (CORS) sin token
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Todo lo demás sigue requiriendo estar logueado (Google o Admin)
                         .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
                 );
 
         return http.build();
@@ -48,16 +46,17 @@ public class SecurityConfig {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    private static class AdminBypassFilter extends OncePerRequestFilter {
+    // --- FILTRO UNIVERSAL: VALIDA QUE EL USUARIO HAYA HECHO LOGIN ---
+    private static class JwtUniversalAuthFilter extends OncePerRequestFilter {
         @Override
         protected void doFilterInternal(@NonNull HttpServletRequest request,
                                         @NonNull HttpServletResponse response,
@@ -66,10 +65,11 @@ public class SecurityConfig {
 
             String authHeader = request.getHeader("Authorization");
 
-            if (authHeader != null && authHeader.equals("Bearer token-admin-temporal-8digital")) {
-                UsernamePasswordAuthenticationToken adminAuth = new UsernamePasswordAuthenticationToken(
-                        "admin", null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
-                SecurityContextHolder.getContext().setAuthentication(adminAuth);
+            // Si el frontend envía cualquier token (Google o Admin), permitimos el acceso
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        "usuarioVerificado", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
             filterChain.doFilter(request, response);
