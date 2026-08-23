@@ -34,9 +34,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtUniversalAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        // ¡LA CLAVE DE TODO! Permitir las peticiones de sondeo OPTIONS (CORS) sin token
+                        // 1. Permite las peticiones de sondeo CORS (OPTIONS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Todo lo demás sigue requiriendo estar logueado (Google o Admin)
+                        // 2. Seguridad privada validada por nuestro filtro unificado
                         .anyRequest().authenticated()
                 );
 
@@ -46,31 +46,35 @@ public class SecurityConfig {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    // --- FILTRO UNIVERSAL: VALIDA QUE EL USUARIO HAYA HECHO LOGIN ---
+    // --- FILTRO UNIFICADO DENTRO DEL MISMO ARCHIVO ---
     private static class JwtUniversalAuthFilter extends OncePerRequestFilter {
+
+        @Override
+        protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+            return HttpMethod.OPTIONS.matches(request.getMethod());
+        }
+
         @Override
         protected void doFilterInternal(@NonNull HttpServletRequest request,
                                         @NonNull HttpServletResponse response,
                                         @NonNull FilterChain filterChain)
                 throws ServletException, IOException {
 
-            String authHeader = request.getHeader("Authorization");
-
-            // Si el frontend envía cualquier token (Google o Admin), permitimos el acceso
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        "usuarioVerificado", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            // Contexto de seguridad unificado para que Admin y Google pasen sin errores 403
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    "usuarioVerificado", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
         }

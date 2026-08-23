@@ -13,18 +13,41 @@ public class ProductoService {
 
     private final ProductoRepository productoRepository;
 
-    // Inyectamos el repositorio que conecta con XAMPP
+    // Inyectamos el repositorio que conecta con la base de datos cloud en AWS RDS
     public ProductoService(ProductoRepository productoRepository) {
         this.productoRepository = productoRepository;
     }
 
+    // Listar y agrupar todo el inventario por categoría
     public Map<String, List<Producto>> obtenerInventario() {
-        // 1. Obtenemos absolutamente todos los productos desde la base de datos
         List<Producto> todosLosProductos = productoRepository.findAll();
-
-        // 2. Usamos Streams para agruparlos automáticamente por el campo "categoria"
-        // Esto creará exactamente el formato que React espera: { "tortas": [...], "queques": [...] }
         return todosLosProductos.stream()
                 .collect(Collectors.groupingBy(Producto::getCategoria));
+    }
+
+    // Guardar un nuevo producto en la base de datos
+    public Producto guardarProducto(Producto producto) {
+        return productoRepository.save(producto);
+    }
+
+    // Actualizar un producto existente buscando por su ID (usando los campos exactos de tu modelo)
+    public Producto actualizarProducto(Long id, Producto productoDetalles) {
+        return productoRepository.findById(id).map(producto -> {
+            producto.setNombre(productoDetalles.getNombre());
+            producto.setDescripcion(productoDetalles.getDescripcion());
+            producto.setPrecio(productoDetalles.getPrecio());
+            producto.setImagen(productoDetalles.getImagen());
+            producto.setCategoria(productoDetalles.getCategoria());
+            return productoRepository.save(producto);
+        }).orElse(null);
+    }
+
+    // Eliminar un producto de la base de datos por su ID
+    public boolean eliminarProducto(Long id) {
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
