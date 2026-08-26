@@ -36,7 +36,7 @@ public class ProductoService {
             producto.setNombre(productoDetalles.getNombre());
             producto.setDescripcion(productoDetalles.getDescripcion());
             producto.setPrecio(productoDetalles.getPrecio());
-            producto.setImagen(productoDetalles.getImagen());
+            producto.setImagenUrl(productoDetalles.getImagenUrl());
             producto.setCategoria(productoDetalles.getCategoria());
             return productoRepository.save(producto);
         }).orElse(null);

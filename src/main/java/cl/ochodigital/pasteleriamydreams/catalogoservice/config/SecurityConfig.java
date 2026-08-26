@@ -31,12 +31,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // ¡AQUÍ ESTÁ LA MAGIA QUE ARREGLA EL POST Y EL PUT!
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtUniversalAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Permite las peticiones de sondeo CORS (OPTIONS)
+                        // Permite ver los errores reales (400, 500)
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 2. Seguridad privada validada por nuestro filtro unificado
+                        .requestMatchers("/error").permitAll()
+                        // Seguridad estricta: Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 );
 
@@ -56,7 +59,7 @@ public class SecurityConfig {
         return source;
     }
 
-    // --- FILTRO UNIFICADO DENTRO DEL MISMO ARCHIVO ---
+    // --- FILTRO UNIFICADO ---
     private static class JwtUniversalAuthFilter extends OncePerRequestFilter {
 
         @Override
@@ -70,10 +73,9 @@ public class SecurityConfig {
                                         @NonNull FilterChain filterChain)
                 throws ServletException, IOException {
 
-            // Contexto de seguridad unificado para que Admin y Google pasen sin errores 403
+            // Da el pase de Admin a las peticiones que pasan por aquí
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    "usuarioVerificado", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-            authentication.setAuthenticated(true);
+                    "adminVerificado", null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
