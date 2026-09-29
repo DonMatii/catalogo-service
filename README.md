@@ -2,6 +2,16 @@
 
 Microservicio backend encargado de gestionar el inventario y catálogo de productos para el sistema **Pastelería My Dreams**.
 
+## 📌 Versiones del proyecto
+
+| Rama | Versión | Contenido |
+| :--- | :--- | :--- |
+| `version-1` | **Entrega 1** | CRUD de catálogo con seguridad JWT detrás de AWS API Gateway. |
+| `version-2` | **Entrega 2** | Pendiente. |
+| `version-3` | **Unidad 3** | Pendiente. |
+
+`main` siempre lleva el último avance del desarrollo.
+
 ## 🏢 Equipo de Desarrollo
 Diseñado y construido por **8 Digital**.
 
