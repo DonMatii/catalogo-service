@@ -49,3 +49,8 @@ nohup java -jar catalogo-service-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
 ```
 
 ## Nota de Arquitectura y Seguridad: El microservicio implementa un filtro personalizado compatible con Spring Security 7 (JwtUniversalAuthFilter) diseñado para procesar el tráfico proveniente de AWS API Gateway. Todas las operaciones del CRUD (GET, POST, PUT, DELETE) operan de forma fluida y sincronizada con el frontend en React, permitiendo una gestión completa del catálogo sin bloqueos de CORS.
+## Seguridad (v2)
+
+- **Público:** `GET /api/productos` (lo necesita el formulario de pedido sin login).
+- **Protegido con header `X-Api-Key`:** `POST`, `PUT` y `DELETE` de `/api/productos` — antes cualquier visitante podía editar o borrar el catálogo.
+- La clave vive en la variable de entorno `APP_ADMIN_API_KEY` (propiedad `app.admin-api-key`); sin configurar, las escrituras responden `503` (fail-closed).
