@@ -10,6 +10,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/productos")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://pasteleria-my-dreams-web-8digital.s3-website-us-east-1.amazonaws.com"
+})
 public class ProductoController {
 
     private final ProductoService productoService;
