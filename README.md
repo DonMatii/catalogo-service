@@ -54,3 +54,4 @@ nohup java -jar catalogo-service-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
 - **Público:** `GET /api/productos` (lo necesita el formulario de pedido sin login).
 - **Protegido con header `X-Api-Key`:** `POST`, `PUT` y `DELETE` de `/api/productos` — antes cualquier visitante podía editar o borrar el catálogo.
 - La clave vive en la variable de entorno `APP_ADMIN_API_KEY` (propiedad `app.admin-api-key`); sin configurar, las escrituras responden `503` (fail-closed).
+- **CORS:** el controlador permite dos orígenes: el frontend local `http://localhost:5173` y el sitio público desplegado en S3 (`http://pasteleria-my-dreams-web-8digital.s3-website-us-east-1.amazonaws.com`).
