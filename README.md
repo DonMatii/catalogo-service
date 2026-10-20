@@ -41,12 +41,29 @@ Diseñado y construido por **8 Digital**.
 - **Algoritmo:** el catálogo se ordena por `id`, se baraja (Fisher-Yates) con una semilla estable derivada del par (año de semana ISO, número de semana ISO) y se elige el índice `0=lunes .. 6=domingo`. La fecha se toma con `LocalDate.now()` (zona del servidor); solo `catalogo-service` decide la delicia.
 - Es un endpoint **público** (sin `X-Api-Key`): lo consumen el Home del frontend y `pedidos-service`.
 
+## 🔐 Variables de entorno
+
+La conexión a la base de datos y la clave de escritura se configuran por variables de entorno (RNF-11; nunca se commitean secretos), con defaults locales:
+
+| Variable | Default local |
+|----------|---------------|
+| `DB_URL` | `jdbc:mysql://localhost:3306/pasteleria_my_dreams?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC` |
+| `DB_USER` | `root` |
+| `DB_PASS` | *(vacío)* |
+| `APP_ADMIN_API_KEY` | *(vacía: las escrituras responden `503`, fail-closed)* |
+
+Arranque local (puerto `8080`):
+
+```bash
+.\mvnw.cmd spring-boot:run
+```
+
 ## ⚙️ Configuración y Despliegue Cloud (EC2)
 Para el entorno de producción, este microservicio se encuentra desplegado sobre instancias **Amazon EC2** y su acceso está centralizado y protegido a través de **AWS API Gateway** con enrutamiento de proxy (`/{proxy+}`).
 
 Para ejecutar este microservicio en un entorno de desarrollo conectado a la infraestructura cloud:
 1. Asegurarse de tener el JDK 21 instalado.
-2. Verificar las credenciales y el endpoint de conexión a la base de datos en el archivo `src/main/resources/application.properties` (AWS RDS).
+2. Configurar las variables de entorno de la sección anterior apuntando a la base de datos de destino (AWS RDS en producción; en local bastan los defaults).
 3. Abrir el proyecto en IntelliJ IDEA, actualizar las dependencias de Maven y ejecutar la clase principal `CatalogoServiceApplication.java`.
 4. El servidor se inicializará por defecto en el puerto `8080`.
 5. **Despliegue en Producción:** Para levantar el servicio en la instancia EC2 de forma segura, aislada y en segundo plano, se utiliza el siguiente comando, el cual también genera un registro de eventos (`app.log`):
