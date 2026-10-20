@@ -1,10 +1,13 @@
 package cl.ochodigital.pasteleriamydreams.catalogoservice.controller;
 
 import cl.ochodigital.pasteleriamydreams.catalogoservice.model.Producto;
+import cl.ochodigital.pasteleriamydreams.catalogoservice.service.DeliciaDelDiaService;
 import cl.ochodigital.pasteleriamydreams.catalogoservice.service.ProductoService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -17,15 +20,27 @@ import java.util.Map;
 public class ProductoController {
 
     private final ProductoService productoService;
+    private final DeliciaDelDiaService deliciaDelDiaService;
 
-    public ProductoController(ProductoService productoService) {
+    public ProductoController(ProductoService productoService, DeliciaDelDiaService deliciaDelDiaService) {
         this.productoService = productoService;
+        this.deliciaDelDiaService = deliciaDelDiaService;
     }
 
     // Listar todo el inventario (Usado por el catálogo y el admin)
     @GetMapping
     public Map<String, List<Producto>> listarProductos() {
         return productoService.obtenerInventario();
+    }
+
+    // Delicia del Día: producto elegido de forma determinista por fecha, el mismo
+    // para todos los usuarios (Usado por el Home y por pedidos-service)
+    @GetMapping("/delicia-del-dia")
+    public ResponseEntity<?> obtenerDeliciaDelDia() {
+        return deliciaDelDiaService.obtenerDeliciaDelDia(LocalDate.now())
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("mensaje", "El catálogo está vacío; no hay delicia del día disponible")));
     }
 
     // Crear un nuevo producto (Usado al publicar desde el AdminPanel)
