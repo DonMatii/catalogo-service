@@ -55,7 +55,13 @@ La conexión a la base de datos y la clave de escritura se configuran por variab
 Arranque local (puerto `8080`):
 
 ```bash
-.\mvnw.cmd spring-boot:run
+.\start-local.ps1   # recomendado: carga .env.local con APP_ADMIN_API_KEY
+```
+
+O a mano, exportando la variable en la terminal antes de arrancar:
+
+```bash
+$env:APP_ADMIN_API_KEY="valor"; .\mvnw.cmd spring-boot:run
 ```
 
 ## ⚙️ Configuración y Despliegue Cloud (EC2)
