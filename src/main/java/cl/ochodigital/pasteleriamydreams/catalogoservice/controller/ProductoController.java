@@ -4,6 +4,7 @@ import cl.ochodigital.pasteleriamydreams.catalogoservice.model.Producto;
 import cl.ochodigital.pasteleriamydreams.catalogoservice.service.DeliciaDelDiaService;
 import cl.ochodigital.pasteleriamydreams.catalogoservice.service.ProductoService;
 import cl.ochodigital.pasteleriamydreams.catalogoservice.storage.ImageStorage;
+import cl.ochodigital.pasteleriamydreams.catalogoservice.storage.KinesisEventosPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,12 +28,14 @@ public class ProductoController {
     private final ProductoService productoService;
     private final DeliciaDelDiaService deliciaDelDiaService;
     private final ImageStorage imageStorage;
+    private final KinesisEventosPublisher kinesisPublisher;
 
     public ProductoController(ProductoService productoService, DeliciaDelDiaService deliciaDelDiaService,
-            ImageStorage imageStorage) {
+            ImageStorage imageStorage, KinesisEventosPublisher kinesisPublisher) {
         this.productoService = productoService;
         this.deliciaDelDiaService = deliciaDelDiaService;
         this.imageStorage = imageStorage;
+        this.kinesisPublisher = kinesisPublisher;
     }
 
     // Listar todo el inventario (Usado por el catálogo y el admin)
@@ -118,5 +122,24 @@ public class ProductoController {
             case "image/webp" -> ".webp";
             default -> null;
         };
+    }
+
+    // Ping de "producto visto" (Entrega 3): el front lo llama cuando la foto
+    // del producto entra en pantalla. Publica el evento `producto_visto` en el
+    // stream de Kinesis para los "productos más vistos". Best-effort por
+    // diseño: el ping jamás rompe la navegación, responde 204 siempre.
+    // Evento JSON (mismo contrato que los eventos de pedidos):
+    // {"evento":"ProductoVisto","id":<productoId>,"fecha":"<ISO-8601>"}
+    @PostMapping("/{id}/visto")
+    public ResponseEntity<Void> marcarProductoVisto(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        // JSON armado a mano: el evento solo lleva id y fecha, sin caracteres
+        // que escapar, y así el servicio no necesita dependencias de JSON
+        String json = String.format("{\"evento\":\"ProductoVisto\",\"id\":%d,\"fecha\":\"%s\"}",
+                id, LocalDateTime.now());
+        kinesisPublisher.publicar("producto_visto", id, json);
+        return ResponseEntity.noContent().build();
     }
 }

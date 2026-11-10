@@ -37,6 +37,10 @@ Diseñado y construido por **8 Digital**.
 
 `POST /api/productos/imagen` — multipart con el campo `archivo` (JPG, PNG o WebP, máx. 5 MB). Exige `X-Api-Key` como el resto de las escrituras. Responde `200` con `{"url": "/uploads/<uuid>.<ext>"}` y esa URL viaja en el `imagenUrl` del producto (en el create o el PUT existentes). El archivo se guarda detrás de la interfaz `ImageStorage` (`LocalDiskImageStorage`, directorio `app.imagenes.directorio`, por defecto `./uploads`) y se sirve en `GET /uploads/**`. Al migrar a AWS se reemplaza el adaptador por S3 sin tocar el contrato. Errores: `400` con `{"mensaje": ...}` para archivo vacío, formato no permitido o más de 5 MB.
 
+### Evento `producto_visto` (Entrega 3)
+
+`POST /api/productos/{id}/visto` — ping del front cuando la foto del producto entra en pantalla. Publica el evento `producto_visto` en el stream de Kinesis (`{"evento":"ProductoVisto","id":<id>,"fecha":"<ISO>"}`) para los "productos más vistos". Es **best-effort por diseño**: responde `204` siempre y un fallo del stream jamás rompe la navegación. Nota: `spring-boot-devtools` se retiró del `pom.xml` porque su `RestartClassLoader` no carga las clases del AWS SDK (JARs modulares) y el servicio no arrancaba; solo aportaba hot-reload.
+
 ### Delicia del Día: regla de determinismo
 
 - **Mismo día → misma delicia** para todos los usuarios (no hay azar por usuario).

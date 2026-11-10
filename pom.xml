@@ -45,6 +45,19 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- AWS SDK v2 para Kinesis: eventos de negocio del stream (Entrega 3).
+             Endpoint configurable: LocalStack en local, Kinesis real del lab -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>kinesis</artifactId>
+            <version>2.25.60</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+            <version>2.25.60</version>
+        </dependency>
+
         <!-- ========================================== -->
         <!-- 2. BASE DE DATOS (NUESTRO AGREGADO)        -->
         <!-- ========================================== -->
@@ -63,12 +76,10 @@
         <!-- ========================================== -->
         <!-- 3. HERRAMIENTAS DE DESARROLLO Y TESTING    -->
         <!-- ========================================== -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
+        <!-- spring-boot-devtools se retiró a propósito: su RestartClassLoader
+             no logra cargar las clases del AWS SDK (JARs modulares) y el
+             servicio no arrancaba. Solo aportaba hot-reload; los demás
+             servicios del proyecto nunca lo tuvieron. -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
