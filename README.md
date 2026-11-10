@@ -33,6 +33,10 @@ Diseñado y construido por **8 Digital**.
 | `PUT` | `/api/productos/{id}` | Actualiza los datos de un producto existente buscando por su ID único. |
 | `DELETE` | `/api/productos/{id}` | Elimina de forma lógica o física un producto del inventario mediante su ID. |
 
+### Upload de imágenes de producto (admin)
+
+`POST /api/productos/imagen` — multipart con el campo `archivo` (JPG, PNG o WebP, máx. 5 MB). Exige `X-Api-Key` como el resto de las escrituras. Responde `200` con `{"url": "/uploads/<uuid>.<ext>"}` y esa URL viaja en el `imagenUrl` del producto (en el create o el PUT existentes). El archivo se guarda detrás de la interfaz `ImageStorage` (`LocalDiskImageStorage`, directorio `app.imagenes.directorio`, por defecto `./uploads`) y se sirve en `GET /uploads/**`. Al migrar a AWS se reemplaza el adaptador por S3 sin tocar el contrato. Errores: `400` con `{"mensaje": ...}` para archivo vacío, formato no permitido o más de 5 MB.
+
 ### Delicia del Día: regla de determinismo
 
 - **Mismo día → misma delicia** para todos los usuarios (no hay azar por usuario).

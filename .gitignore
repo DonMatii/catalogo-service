@@ -49,3 +49,6 @@ odd/
 # Logs locales de arranque (nunca se commitean)
 run.log
 run-err.log
+
+# Imagenes subidas desde el admin (ImageStorage local; nunca se commitean)
+uploads/
