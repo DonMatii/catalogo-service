@@ -52,3 +52,6 @@ run-err.log
 
 # Imagenes subidas desde el admin (ImageStorage local; nunca se commitean)
 uploads/
+
+# Logs locales de cualquier herramienta (nunca se commitean)
+*.log
